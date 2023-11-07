@@ -6,7 +6,7 @@
 #include <sys/queue.h>
 
 #include <pthread.h>
-pthread_mutex_t hash_lock = PTHREAD_MUTEX_INITIALIZER;
+
 struct list_entry {
 	const char *key;
 	uint32_t value;
@@ -91,9 +91,9 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	list_entry = calloc(1, sizeof(struct list_entry));
 	list_entry->key = key;
 	list_entry->value = value;
-	pthread_mutex_lock(&hash_lock);
+	pthread_mutex_lock(&hash_table_entry->h_lock);
 	SLIST_INSERT_HEAD(list_head, list_entry, pointers);
-	pthread_mutex_unlock(&hash_lock);
+	pthread_mutex_unlock(&hash_table_entry->h_lock);
 }
 
 uint32_t hash_table_v2_get_value(struct hash_table_v2 *hash_table,
@@ -119,6 +119,5 @@ void hash_table_v2_destroy(struct hash_table_v2 *hash_table)
 		}
 		pthread_mutex_destroy(&entry->h_lock);
 	}
-	pthread_mutex_destroy(&hash_lock);
 	free(hash_table);
 }

@@ -82,9 +82,9 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	uint32_t index = hash_table_entry->index;
 	/* Update the value if it already exists */
 	if (list_entry != NULL) {
-		pthread_mutex_lock(&hash_table_entry->h_lock);
+		//pthread_mutex_lock(&hash_table_entry->h_lock);
 		list_entry->value = value;
-		pthread_mutex_unlock(&hash_table_entry->h_lock);
+		//pthread_mutex_unlock(&hash_table_entry->h_lock);
 		return;
 	}
 

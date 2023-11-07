@@ -42,7 +42,7 @@ static struct hash_table_entry *get_hash_table_entry(struct hash_table_v2 *hash_
 	assert(key != NULL);
 	uint32_t index = bernstein_hash(key) % HASH_TABLE_CAPACITY;
 	struct hash_table_entry *entry = &hash_table->entries[index];
-	&entry->index = index;
+	entry->index = index;
 	return entry;
 }
 
@@ -78,7 +78,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
 	struct list_head *list_head = &hash_table_entry->list_head;
 	struct list_entry *list_entry = get_list_entry(hash_table, key, list_head);
-	uint32_t index = &hash_table_entry->index;
+	uint32_t index = hash_table_entry->index;
 	/* Update the value if it already exists */
 	if (list_entry != NULL) {
 		list_entry->value = value;

@@ -31,7 +31,7 @@ struct hash_table_v2 *hash_table_v2_create()
 	for (size_t i = 0; i < HASH_TABLE_CAPACITY; ++i) {
 		struct hash_table_entry *entry = &hash_table->entries[i];
 		SLIST_INIT(&entry->list_head);
-		pthread_mutex_init(&lock[i], NULL);
+		pthread_mutex_init(&(entry->lock), NULL);
 	}
 	return hash_table;
 }

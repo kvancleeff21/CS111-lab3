@@ -6,7 +6,7 @@
 #include <sys/queue.h>
 
 #include <pthread.h>
-pthread_mutex_t lock[HASH_TABLE_CAPACITY];
+
 struct list_entry {
 	const char *key;
 	uint32_t value;
@@ -17,7 +17,7 @@ SLIST_HEAD(list_head, list_entry);
 
 struct hash_table_entry {
 	struct list_head list_head;
-	uint32_t index;
+	pthread_mutex_t lock;
 };
 
 struct hash_table_v2 {
@@ -42,7 +42,6 @@ static struct hash_table_entry *get_hash_table_entry(struct hash_table_v2 *hash_
 	assert(key != NULL);
 	uint32_t index = bernstein_hash(key) % HASH_TABLE_CAPACITY;
 	struct hash_table_entry *entry = &hash_table->entries[index];
-	entry->index = index;
 	return entry;
 }
 
@@ -53,14 +52,12 @@ static struct list_entry *get_list_entry(struct hash_table_v2 *hash_table,
 	assert(key != NULL);
 
 	struct list_entry *entry = NULL;
-	
+
 	SLIST_FOREACH(entry, list_head, pointers) {
 	  if (strcmp(entry->key, key) == 0) {
-		pthread_mutex_unlock(&lock[index]);
 	    return entry;
 	  }
 	}
-	pthread_mutex_unlock(&lock[index]);
 	return NULL;
 }
 
@@ -79,19 +76,17 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 {
 	struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
 	struct list_head *list_head = &hash_table_entry->list_head;
-	pthread_mutex_lock(&lock[index]);
 	struct list_entry *list_entry = get_list_entry(hash_table, key, list_head);
-	uint32_t index = hash_table_entry->index;
 	/* Update the value if it already exists */
 	if (list_entry != NULL) {
-		//pthread_mutex_lock(&hash_table_entry->h_lock);
 		list_entry->value = value;
-		//pthread_mutex_unlock(&hash_table_entry->h_lock);
 		return;
 	}
 	list_entry = calloc(1, sizeof(struct list_entry));
+	pthread_mutex_lock(&(hash_table_entry->lock));
 	list_entry->key = key;
 	list_entry->value = value;
+	pthread_mutex_unlock(&(hash_table_entry->lock));
 	SLIST_INSERT_HEAD(list_head, list_entry, pointers);
 }
 
@@ -116,7 +111,7 @@ void hash_table_v2_destroy(struct hash_table_v2 *hash_table)
 			SLIST_REMOVE_HEAD(list_head, pointers);
 			free(list_entry);
 		}
-		pthread_mutex_destroy(&lock[i]);
+		pthread_mutex_destroy(&(entry->lock));
 	}
 	free(hash_table);
 }

@@ -11,14 +11,13 @@ struct list_entry {
 	const char *key;
 	uint32_t value;
 	SLIST_ENTRY(list_entry) pointers;
-	pthread_mutex_t lock;
 };
 
 SLIST_HEAD(list_head, list_entry);
 
 struct hash_table_entry {
 	struct list_head list_head;
-	//pthread_mutex_t lock;
+	pthread_mutex_t lock;
 };
 
 struct hash_table_v2 {
@@ -32,7 +31,6 @@ struct hash_table_v2 *hash_table_v2_create()
 	for (size_t i = 0; i < HASH_TABLE_CAPACITY; ++i) {
 		struct hash_table_entry *entry = &hash_table->entries[i];
 		SLIST_INIT(&entry->list_head);
-		//pthread_mutex_init(&(entry->lock), NULL);
 	}
 	return hash_table;
 }
@@ -43,6 +41,7 @@ static struct hash_table_entry *get_hash_table_entry(struct hash_table_v2 *hash_
 	assert(key != NULL);
 	uint32_t index = bernstein_hash(key) % HASH_TABLE_CAPACITY;
 	struct hash_table_entry *entry = &hash_table->entries[index];
+	pthread_mutex_init(&(entry->lock), NULL);
 	return entry;
 }
 
@@ -56,7 +55,6 @@ static struct list_entry *get_list_entry(struct hash_table_v2 *hash_table,
 
 	SLIST_FOREACH(entry, list_head, pointers) {
 	  if (strcmp(entry->key, key) == 0) {
-		pthread_mutex_init(&(entry->lock), NULL);
 	    return entry;
 	  }
 	}
@@ -87,9 +85,9 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	list_entry = calloc(1, sizeof(struct list_entry));
 	list_entry->key = key;
 	list_entry->value = value;
-	pthread_mutex_lock(&(list_entry->lock));
+	pthread_mutex_lock(&(entry->lock));
 	SLIST_INSERT_HEAD(list_head, list_entry, pointers);
-	pthread_mutex_unlock(&(list_entry->lock));
+	pthread_mutex_unlock(&(entry->lock));
 }
 
 uint32_t hash_table_v2_get_value(struct hash_table_v2 *hash_table,
@@ -113,7 +111,7 @@ void hash_table_v2_destroy(struct hash_table_v2 *hash_table)
 			SLIST_REMOVE_HEAD(list_head, pointers);
 			free(list_entry);
 		}
-		pthread_mutex_destroy(&(list_entry->lock));
+		pthread_mutex_destroy(&(entry->lock));
 	}
 	free(hash_table);
 }

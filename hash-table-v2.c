@@ -56,9 +56,11 @@ static struct list_entry *get_list_entry(struct hash_table_v2 *hash_table,
 	
 	SLIST_FOREACH(entry, list_head, pointers) {
 	  if (strcmp(entry->key, key) == 0) {
+		pthread_mutex_unlock(&lock[index]);
 	    return entry;
 	  }
 	}
+	pthread_mutex_unlock(&lock[index]);
 	return NULL;
 }
 
@@ -77,6 +79,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 {
 	struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
 	struct list_head *list_head = &hash_table_entry->list_head;
+	pthread_mutex_lock(&lock[index]);
 	struct list_entry *list_entry = get_list_entry(hash_table, key, list_head);
 	uint32_t index = hash_table_entry->index;
 	/* Update the value if it already exists */
@@ -86,11 +89,9 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 		//pthread_mutex_unlock(&hash_table_entry->h_lock);
 		return;
 	}
-	pthread_mutex_lock(&lock[index]);
 	list_entry = calloc(1, sizeof(struct list_entry));
 	list_entry->key = key;
 	list_entry->value = value;
-	pthread_mutex_unlock(&lock[index]);
 	SLIST_INSERT_HEAD(list_head, list_entry, pointers);
 }
 

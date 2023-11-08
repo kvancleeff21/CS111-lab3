@@ -32,7 +32,7 @@ struct hash_table_v2 *hash_table_v2_create()
 	for (size_t i = 0; i < HASH_TABLE_CAPACITY; ++i) {
 		struct hash_table_entry *entry = &hash_table->entries[i];
 		SLIST_INIT(&entry->list_head);
-		pthread_mutex_init(&(entry->lock), NULL);
+		//pthread_mutex_init(&(entry->lock), NULL);
 	}
 	return hash_table;
 }
@@ -56,7 +56,7 @@ static struct list_entry *get_list_entry(struct hash_table_v2 *hash_table,
 
 	SLIST_FOREACH(entry, list_head, pointers) {
 	  if (strcmp(entry->key, key) == 0) {
-		pthread_mutex_init(&(hash_table_entry->lock), NULL);
+		pthread_mutex_init(&(entry->lock), NULL);
 	    return entry;
 	  }
 	}
@@ -113,7 +113,7 @@ void hash_table_v2_destroy(struct hash_table_v2 *hash_table)
 			SLIST_REMOVE_HEAD(list_head, pointers);
 			free(list_entry);
 		}
-		pthread_mutex_destroy(&(entry->lock));
+		pthread_mutex_destroy(&(list_entry->lock));
 	}
 	free(hash_table);
 }

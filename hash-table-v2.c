@@ -116,7 +116,7 @@ void hash_table_v2_destroy(struct hash_table_v2 *hash_table)
 			SLIST_REMOVE_HEAD(list_head, pointers);
 			free(list_entry);
 		}
-		pthread_mutex_destroy(&entry->h_lock);
+		pthread_mutex_destroy(&lock[i]);
 	}
 	free(hash_table);
 }

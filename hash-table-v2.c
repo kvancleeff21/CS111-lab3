@@ -79,14 +79,16 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	struct list_entry *list_entry = get_list_entry(hash_table, key, list_head);
 	/* Update the value if it already exists */
 	if (list_entry != NULL) {
+		pthread_mutex_lock(&(hash_table_entry->lock));
 		list_entry->value = value;
+		pthread_mutex_unlock(&(hash_table_entry->lock));
 		return;
 	}
 
 	list_entry = calloc(1, sizeof(struct list_entry));
-	pthread_mutex_lock(&(hash_table_entry->lock));
+	//pthread_mutex_lock(&(hash_table_entry->lock));
 	list_entry->key = key;
-	pthread_mutex_unlock(&(hash_table_entry->lock));
+	//pthread_mutex_unlock(&(hash_table_entry->lock));
 	list_entry->value = value;
 	SLIST_INSERT_HEAD(list_head, list_entry, pointers);
 }

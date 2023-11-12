@@ -77,7 +77,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 {
 	struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
 	pthread_mutex_t* lock = &hash_table_entry->lock;
-	pthread_mutex_unlock(lock);
+	pthread_mutex_lock(lock);
 	struct list_head *list_head = &hash_table_entry->list_head;
 	pthread_mutex_unlock(lock);
 	struct list_entry *list_entry = get_list_entry(hash_table, key, list_head);

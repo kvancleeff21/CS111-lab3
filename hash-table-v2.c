@@ -18,7 +18,7 @@ SLIST_HEAD(list_head, list_entry);
 struct hash_table_entry {
 	struct list_head list_head;
 	uint32_t index;
-	static pthread_mutex_t lock;
+	pthread_mutex_t lock;
 };
 
 struct hash_table_v2 {
@@ -84,9 +84,9 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 		return;
 	}
 	list_entry = calloc(1, sizeof(struct list_entry));
-	pthread_mutex_lock(lock);
+	pthread_mutex_lock(&hash_table_entry->lock);
 	list_entry->key = key;
-	pthread_mutex_unlock(lock);
+	pthread_mutex_unlock(&hash_table_entry->lock);
 	list_entry->value = value;
 	SLIST_INSERT_HEAD(list_head, list_entry, pointers);
 }

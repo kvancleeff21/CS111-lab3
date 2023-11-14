@@ -42,16 +42,24 @@ this coarse-grained approach is quite simple and effective in assuring there are
 without hard to find errors. 
 
 ## Second Implementation
-In the `hash_table_v2_add_entry` function, I TODO
+In the `hash_table_v2_add_entry` function, my critical section was only when executing the SLIST_INSERT_HEAD macro because that is the only time where locking is necessary to prevent race conditions since if there were two threads trying to insert into the same linked list at the same time, the linking between nodes could get messed up beyond repair as nodes are added. Furthermore, I created HASH_TABLE_CAPACITY number of mutexes, specifically one mutex per bucket or per linked list because I wanted a very fine grained locking strategy and determined that the cost of initializing all these locks was worth it compared to having more threads waiting on a lock when trying to insert an element into the table. So within the add_entry function, I initialized the lock that belonged to the hash_table_entry that the linked list node was being added to and then grabbed the lock right before insertion and then released it right after insertion. Therfore, my critical section in this code is only as long as it takes for the macro to complete. 
+
 
 ### Performance
 ```shell
-TODO how to run and results
+make
+./hash_table_tester.c -t [FLAG] -s [FLAG]
 ```
-
-TODO more results, speedup measurement, and analysis on v2
-
+My results when running the above program on my local M1 macbook air
+Generation: 26,493 usec
+Hash table base: 36,829 usec
+  - 0 missing
+Hash table v1: 68,553 usec
+  - 0 missing
+Hash table v2: 6,258 usec
+  - 0 missing
+As you can see, I get far more than even the required speed up since the default number of threads is 4 when no flags are supplied, with a speed up of roughly 6 times faster
 ## Cleaning up
 ```shell
-TODO how to clean
+make clean
 ```
